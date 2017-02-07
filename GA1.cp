@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include <vector>
 using namespace std;
 //Take input from the user
 //Remove every other letter
@@ -9,13 +10,14 @@ using namespace std;
 
 struct node {
         char myLetter;
-        bool isHead;
+        bool isStartingPoint;
         node *next;
         node *previous;
 };
 
 class List {
 node* head = NULL;
+vector<char> removedChars;
 public:
 List(){
 
@@ -28,11 +30,11 @@ void addToHead(char c) {
         temp->myLetter = c;
         if(head!=NULL) {
                 head->previous = temp;
-                head->isHead = false;
+                head->isStartingPoint = false;
         }
         // Assign temp to be the new head
         head = temp;
-        head -> isHead = true;
+        head->isStartingPoint = true;
 }
 void addToTail(char c) {
 
@@ -58,12 +60,43 @@ void setChars(string s){
                 addToTail(s[i]);
         }
 }
-void removeEveryOtherChar(){
-
+node * deleteNode(node* _node){
+        node *previousNode = _node->previous;
+        previousNode->next = _node->next;
+        delete _node;
+        _node=NULL;
+        // Returns the next node
+        return previousNode->next;
 }
-void print(){
+void removeEveryOtherChar(char startingPoint){
         node *current = head;
-        while (current!=NULL) {
+        bool everyOther;
+        while(current->myLetter!=startingPoint) {
+                current = current->next;
+        }
+        /* This is our starting point and if we started looping from here then
+           the way I currently have it, the loop would immediately stop, having
+           found a node with startingPoint=true. Instead we do this just before
+           the loop and move one over. */
+        current->isStartingPoint=true;
+        current= current->next;
+        everyOther=true;
+        while (current->isStartingPoint!=true) {
+                if(everyOther) {
+                        // Add node's letter to list of removedChars
+                        removedChars.push_back(current->myLetter);
+                        current=deleteNode(current);
+                        everyOther= false;
+                }else{
+                        everyOther=true;
+                }
+        }
+}
+void circularPrint(){
+        node *current = head;
+        cout<<current->myLetter;
+        current=current->next;
+        while (current!=head) {
                 cout<<current->myLetter;
                 current= current->next;
         }
@@ -71,8 +104,8 @@ void print(){
 }
 void makeCircular(){
         node *current=head;
-        while (current->next!=NULL){
-          current= current->next;
+        while (current->next!=NULL) {
+                current= current->next;
         }
         current->next=head;
 }
@@ -87,10 +120,8 @@ int main(int argc, char *argv[]) {
         cout<<"Input: ";
         getline(cin,userInput);
         ourList.setChars(userInput);
-        ourList.print();
         ourList.makeCircular();
-        ourList.print();
-
+        ourList.circularPrint();
 
 
 
