@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <sstream>
 using namespace std;
 //Take input from the user
 //Remove every other letter
@@ -64,10 +65,20 @@ node * deleteNode(node* _node){
         }
         node *previousNode = _node->previous;
         previousNode->next = _node->next;
+        _node->next->previous = previousNode;
         delete _node;
         _node=NULL;
         // Returns the next node
         return previousNode->next;
+}
+void resetStartingPointBools(){
+        node *current = head;
+        current->isStartingPoint=false;
+        current=current->next;
+        while (current!=head) {
+                current->isStartingPoint=false;
+                current=current->next;
+        }
 }
 void removeEveryOtherChar(char startingPoint){
         node *current = head;
@@ -92,18 +103,21 @@ void removeEveryOtherChar(char startingPoint){
                         current=current->next;
                         everyOther=true;
                 }
-                //cout<<current->myLetter<<endl<<current->isStartingPoint<<endl;
         }
 }
-void circularPrint(){
+string circularPrint(){
         node *current = head;
+        stringstream ss;
         cout<<current->myLetter;
+        ss<<current->myLetter;
         current=current->next;
         while (current!=head) {
                 cout<<current->myLetter;
+                ss<<current->myLetter;
                 current= current->next;
         }
         cout<<endl;
+        return ss.str();
 }
 void makeCircular(){
         node *current=head;
@@ -112,6 +126,12 @@ void makeCircular(){
         }
         current->next=head;
         head->previous=current;
+}
+void printRemovedCharacters(){
+        for (int i = 0; i < removedChars.size(); i++) {
+                cout<<removedChars[i];
+        }
+        cout<<endl;
 }
 };
 
@@ -126,9 +146,20 @@ int main(int argc, char *argv[]) {
         getline(cin,userInput);
         ourList.setChars(userInput);
         ourList.makeCircular();
-        ourList.circularPrint();
+        cout<<"Round 1:"<<endl;
+        ourList.removeEveryOtherChar(userInput[rand()%userInput.length()]);
+        ourList.resetStartingPointBools();
+        userInput=ourList.circularPrint();
+        ourList.printRemovedCharacters();
+        cout<<"Round 2:"<<endl;
+        ourList.removeEveryOtherChar(userInput[rand()%userInput.length()]);
+        ourList.resetStartingPointBools();
+        userInput=ourList.circularPrint();
+        ourList.printRemovedCharacters();
+        cout<<"Round 3:"<<endl;
         ourList.removeEveryOtherChar(userInput[rand()%userInput.length()]);
         ourList.circularPrint();
+        ourList.printRemovedCharacters();
 
 
 
