@@ -79,39 +79,58 @@ vector<PostFixCharacter> convertedInfixString;
 stack<PostFixCharacter> operatorStack;
 
 
-
+bool greaterThanEqualTo(int i){
+  return operatorStack.top().myPrecedence>=convertedInfixString[i].myPrecedence||operatorStack.top().myPrecedence!=PAREN;
+}
 
 public:
 // Default constructure pops in the string to be worked on
-InfixToPostFix(string _infix) : infix(_infix){
+InfixToPostFix(string _infix){
+  infix = _infix;
         for (size_t i = 0; i < infix.length(); i++) {
                 PostFixCharacter temp(infix[i]);
                 convertedInfixString.push_back(temp);
         }
+        // printConverted();
+        generatePostFix();
 }
-void generatePostFix(){
-  for (size_t i = 0; i < convertedInfixString.size(); i++) {
-    switch (convertedInfixString[i].myState) {
-      case OPERAND:
-      postfix = postfix + convertedInfixString[i].myChar;
-      break;
-      case OPENPAREN:
-      operatorStack.push(convertedInfixString[i]);
-      break;
-      case CLOSEPAREN:
-      //Pop and append until you hit an open paren that you discard
-      while (operatorStack.top().myPrecedence!=PAREN) {
-        postfix = postfix + operatorStack.top().myChar;
-        operatorStack.pop();
-      }
-      // TEMP: Print is there to check that it's the open paren we're killing
-      cout<<operatorStack.top().myChar<<endl;
-      operatorStack.pop();
-      break;
-      case OPERATOR:
-      break;
-    }
+void printConverted(){
+  for (int i = 0; i < convertedInfixString.size(); i++) {
+    cout<<"myChar is "<<convertedInfixString[i].myChar<<endl;
+    // cout<<"SymbolState is "<<convertedInfixString[i].myState<<endl;
+    cout<<"Precedence is "<<convertedInfixString[i].myPrecedence<<endl;
   }
+}
+
+
+void generatePostFix(){
+        for (int i = 0; i < convertedInfixString.size(); i++) {
+                switch (convertedInfixString[i].myState) {
+                case OPERAND:
+                        postfix = postfix + convertedInfixString[i].myChar;
+                        break;
+                case OPENPAREN:
+                        operatorStack.push(convertedInfixString[i]);
+                        break;
+                case CLOSEPAREN:
+                        //Pop and append until you hit an open paren that you discard
+                        while (operatorStack.top().myPrecedence!=PAREN) {
+                                postfix = postfix + operatorStack.top().myChar;
+                                operatorStack.pop();
+                        }
+                        operatorStack.pop();
+                        break;
+                case OPERATOR:
+                        while (!operatorStack.empty()) {
+                            postfix = postfix + operatorStack.top().myChar;
+                            operatorStack.pop();
+                        }
+                        operatorStack.push(convertedInfixString[i]);
+                        break;
+                default:
+                        break;
+                }
+        }
 }
 
 void getInfix(string input){
