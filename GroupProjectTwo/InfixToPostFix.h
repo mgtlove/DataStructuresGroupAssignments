@@ -5,7 +5,7 @@
 using namespace std;
 
 enum SymbolStates {GARBAGE=0, OPERAND, CLOSEPAREN, OPENPAREN, OPERATOR};
-enum Precedence {NOTSET=0, PAREN = 6, MULTDIV=5, ADDSUB=4 };
+enum Precedence {NOTSET=0, PAREN = -1, MULTDIV=5, ADDSUB=4 };
 
 struct PostFixCharacter {
         char myChar = ' ';
@@ -121,7 +121,7 @@ void generatePostFix(){
                         operatorStack.pop();
                         break;
                 case OPERATOR:
-                        while (!operatorStack.empty()) {
+                        while (!operatorStack.empty()&&operatorStack.top().myPrecedence>=convertedInfixString[i].myPrecedence) {
                             postfix = postfix + operatorStack.top().myChar;
                             operatorStack.pop();
                         }
@@ -130,6 +130,11 @@ void generatePostFix(){
                 default:
                         break;
                 }
+
+        }
+        while (!operatorStack.empty()) {
+          postfix = postfix + operatorStack.top().myChar;
+          operatorStack.pop();
         }
 }
 
