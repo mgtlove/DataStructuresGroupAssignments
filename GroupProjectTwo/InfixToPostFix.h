@@ -11,7 +11,6 @@ struct PostFixCharacter {
         char myChar = ' ';
         SymbolStates myState = GARBAGE;
         Precedence myPrecedence = NOTSET;
-
 private:
         bool isOperator(char input){
                 switch (input) {
