@@ -1,55 +1,61 @@
 #include <queue>
-#include "ServerList.h"
+#include "Server.h"
+#include "StatsPerHour.h"
 using namespace std;
 
-class Simulation{
+class Simulation {
 private:
-  //Needs two queues one per server
-  queue<Customer> aliceQueue;
-  queue<Customer> bobQueue;
+
+// Two Servers, bob and alice
+Server alice;
+Server bob;
+StatsPerHour myStats;
+
+//Needs two lines one per server
+queue<Customer> aliceLine;
+queue<Customer> bobLine;
 
 
-  // Hour is minutes divided by 60
-  int currentHour = 0;
-  //currentMinute
-  int currentMinute = 1;
+//currentMinute
+int currentMinute = 1;
 
-  // Wait time
-  int runningAVGWaitTime = 0;
-  // Simulation Time
-  int simulationTimeLimit = 4320;
+// Simulation Time
+int simulationTimeLimit = 4320;
 
 public:
-  void runSimulation(){
-    Server alice((int[]){1,2,3,4,5},(int[]){8,9,10,11,12});
-    Server bob((int[]){4,5,6,7,8},(int[]){6,7,8,9,10});
-
-    for (currentMinute; currentMinute < simulationTimeLimit; currentMinute++) {
-      // Generate customers if neccesary
-      generateCustomers(currentMinute);
-      cout<<"Current minute is "<<currentMinute<<endl;
-      // Check alice's queue
-
-      // Check bob's queue
+void runSimulation(){
+        // Assign wait times to both servers
+        alice.assignBothServingTimes((int[]){1,2,3,4,5},(int[]){8,9,10,11,12});
+        bob.assignBothServingTimes((int[]){4,5,6,7,8},(int[]){6,7,8,9,10});
 
 
-
-    // End of for loop
-    }
-    cout<<"aliceQueue: \n";
-    while (aliceQueue.size()) {
-      aliceQueue.front().printMe();
-      aliceQueue.pop();
-    }
-    cout<<"bobQueue: \n";
-    while (bobQueue.size()){
-      bobQueue.front().printMe();
-      bobQueue.pop();
-    }
+        for (; currentMinute < simulationTimeLimit; currentMinute++) {
+                // Generate customers if neccesary
+                generateCustomers(currentMinute);
+                myStats.hourTracker(currentMinute);
+                // If Alice is available and there's someone in the line, get a customer
+                if (alice.serverAvailable(currentMinute) && aliceLine.size()>0) {
+                        processCustomer(alice, aliceLine);
+                }
+                // If Bob is available, get a customer from his queue
+                if (bob.serverAvailable(currentMinute) && bobLine.size()>0) {
+                        processCustomer(bob, bobLine);
+                }
 
 
 
-    }
+                // End of for loop
+        }
+
+        // TEMP: Print out what we had in the stack
+        // cout<<"aliceLine: \n";
+        // printAndEmptyQueue(aliceLine);
+        // cout<<"bobLine: \n";
+        // printAndEmptyQueue(bobLine);
+
+
+        // NOTE: Print out alice and bob's stats around here
+}
 
 
 
@@ -57,15 +63,33 @@ public:
 
 //Customer generation
 void generateCustomers(int inputTime){
-  if (inputTime%5==0) {
-    //Generate Customers every five minutes
-    Customer temp((rand()%101)+1,inputTime);
-    // Randomly into each line
-    if (rand()%2==0) {
-      aliceQueue.push(temp);
-    }else{
-    bobQueue.push(temp);
-  }
-  }
+        if (inputTime%5==0 && rand()%100<=69) {
+                //Generate Customers every five minutes
+                Customer temp((rand()%101)+1,inputTime);
+                // Randomly into each line
+                if (rand()%2==0) {
+                        aliceLine.push(temp);
+                }else{
+                        bobLine.push(temp);
+                }
+        }
 }
+void printAndEmptyQueue(queue<Customer> input){
+        while (input.size()) {
+                input.front().printMe();
+                input.pop();
+        }
+
+}
+void processCustomer(Server &myServer, queue<Customer> &myQueue){
+      int wait = myServer.serveCustomer(&myQueue.front(), currentMinute);
+      if (myQueue.front().getOrder()==HOTDOG) {
+              myStats.setHotdogAndGeneralWait(wait);
+      }else{
+              myStats.setHamburgerAndGeneralWait(wait);
+      }
+      myQueue.pop();
+}
+
+
 };

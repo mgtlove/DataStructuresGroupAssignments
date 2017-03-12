@@ -1,22 +1,64 @@
 #include <cstdlib>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 #include "Customer.h"
 using namespace std;
 
-class Server{
-  // Array randomly chosen between 5 values
-  int *hotDogServingTimes;
-  int *hamburgerServingTimes;
-  bool isBusy = false;
-  // NOTE: Should currentCust be a pointer to a customer instead of making a copy?
-  Customer currentCust;
-  int cashierAVGHotDog=0,cashierAVGHamburger=0, cashierAVGOrderTime=0;
+class Server {
+// Array randomly chosen between 5 values
+int *hotDogServingTimes;
+int *hamburgerServingTimes;
+int availableAtMin;
+bool isBusy=false;
+// NOTE: Should currentCust be a pointer to a customer instead of making a copy?
+Customer *currentCust;
+float cashierAVGHotDog=0,cashierAVGHamburger=0, cashierAVGOrderTime=0;
+vector<int> hotDogServingTimesList, hamburgerServingTimesList;
+
+int bookKeeping(int *arrayOfTimes, vector<int> &recordedTimes, int currentTime){
+  int waitTime = arrayOfTimes[rand()%5];
+  recordedTimes.push_back(waitTime);
+  availableAtMin = currentTime + waitTime;
+  return waitTime;
+}
+
+
+
+
 public:
-  // Constructor
-Server(int hotdog[],int hamburger[]){
-  hotDogServingTimes = hotdog;
-  hamburgerServingTimes = hamburger;
+// Default Constructor
+Server(){
+        hotDogServingTimes = NULL;
+        hamburgerServingTimes = NULL;
+        currentCust = NULL;
+        isBusy = false;
+}
+void assignBothServingTimes(int hotdog[],int hamburger[]){
+        hotDogServingTimes = hotdog;
+        hamburgerServingTimes = hamburger;
+}
+int serveCustomer (Customer* myCust, int currentTime){
+
+        if (myCust->getOrder()==HAMBURGER) {
+                return bookKeeping(hamburgerServingTimes,hamburgerServingTimesList, currentTime);
+        }else if(myCust->getOrder()==HOTDOG){
+                return bookKeeping(hotDogServingTimes, hotDogServingTimesList, currentTime);
+        }else{exit(1);}
+
+        isBusy = true;
+}
+bool serverAvailable(int currentTime){
+  if (!isBusy) {
+    return true;
+  }else{
+    if (currentTime>=availableAtMin) {
+      isBusy=false;
+      return true;
+    }
+    // Should only be reached if busy is true and it isn't time for it to be false yet
+    return false;
+  }
 }
 
 };
