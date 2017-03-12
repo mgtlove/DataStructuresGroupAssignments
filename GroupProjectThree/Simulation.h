@@ -82,13 +82,13 @@ void printAndEmptyQueue(queue<Customer> input){
 
 }
 void processCustomer(Server &myServer, queue<Customer> &myQueue){
-      int wait = myServer.serveCustomer(&myQueue.front(), currentMinute);
-      if (myQueue.front().getOrder()==HOTDOG) {
-              myStats.setHotdogAndGeneralWait(wait);
-      }else{
-              myStats.setHamburgerAndGeneralWait(wait);
-      }
-      myQueue.pop();
+        int wait = myServer.serveCustomer(&myQueue.front(), currentMinute);
+        if (myQueue.front().getOrder()==HOTDOG) {
+                myStats.setHotdogAndGeneralWait(wait);
+        }else{
+                myStats.setHamburgerAndGeneralWait(wait);
+        }
+        myQueue.pop();
 }
 
 

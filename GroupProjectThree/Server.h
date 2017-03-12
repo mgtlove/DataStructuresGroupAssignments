@@ -17,10 +17,10 @@ float cashierAVGHotDog=0,cashierAVGHamburger=0, cashierAVGOrderTime=0;
 vector<int> hotDogServingTimesList, hamburgerServingTimesList;
 
 int bookKeeping(int *arrayOfTimes, vector<int> &recordedTimes, int currentTime){
-  int waitTime = arrayOfTimes[rand()%5];
-  recordedTimes.push_back(waitTime);
-  availableAtMin = currentTime + waitTime;
-  return waitTime;
+        int waitTime = arrayOfTimes[rand()%5];
+        recordedTimes.push_back(waitTime);
+        availableAtMin = currentTime + waitTime;
+        return waitTime;
 }
 
 
@@ -42,23 +42,23 @@ int serveCustomer (Customer* myCust, int currentTime){
 
         if (myCust->getOrder()==HAMBURGER) {
                 return bookKeeping(hamburgerServingTimes,hamburgerServingTimesList, currentTime);
-        }else if(myCust->getOrder()==HOTDOG){
+        }else if(myCust->getOrder()==HOTDOG) {
                 return bookKeeping(hotDogServingTimes, hotDogServingTimesList, currentTime);
         }else{exit(1);}
 
         isBusy = true;
 }
 bool serverAvailable(int currentTime){
-  if (!isBusy) {
-    return true;
-  }else{
-    if (currentTime>=availableAtMin) {
-      isBusy=false;
-      return true;
-    }
-    // Should only be reached if busy is true and it isn't time for it to be false yet
-    return false;
-  }
+        if (!isBusy) {
+                return true;
+        }else{
+                if (currentTime>=availableAtMin) {
+                        isBusy=false;
+                        return true;
+                }
+                // Should only be reached if busy is true and it isn't time for it to be false yet
+                return false;
+        }
 }
 
 };
