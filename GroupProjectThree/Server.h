@@ -13,7 +13,7 @@ int availableAtMin;
 bool isBusy=false;
 // NOTE: Should currentCust be a pointer to a customer instead of making a copy?
 Customer *currentCust;
-float cashierAVGHotDog=0,cashierAVGHamburger=0, cashierAVGOrderTime=0;
+double cashierAVGHotDog=0,cashierAVGHamburger=0, cashierAVGOrderTime=0;
 vector<int> hotDogServingTimesList, hamburgerServingTimesList;
 
 int bookKeeping(int *arrayOfTimes, vector<int> &recordedTimes, int currentTime){
@@ -42,10 +42,14 @@ int serveCustomer (Customer* myCust, int currentTime){
 
         if (myCust->getOrder()==HAMBURGER) {
                 return bookKeeping(hamburgerServingTimes,hamburgerServingTimesList, currentTime);
+
         }else if(myCust->getOrder()==HOTDOG) {
                 return bookKeeping(hotDogServingTimes, hotDogServingTimesList, currentTime);
         }else{exit(1);}
 
+
+        cashierAVGHotDog = populateAverage(hotDogServingTimesList);
+        cashierAVGHamburger = populateAverage(hamburgerServingTimesList);
         isBusy = true;
 }
 bool serverAvailable(int currentTime){
@@ -59,6 +63,16 @@ bool serverAvailable(int currentTime){
                 // Should only be reached if busy is true and it isn't time for it to be false yet
                 return false;
         }
+}
+double populateAverage(vector<int> servingTimesList){
+  if (servingTimesList.size()==0) {
+    return 0;
+  }
+  double sum=0;
+  for(int i=0;i<servingTimesList.size();i++){
+    sum+=servingTimesList[i];
+  }
+  return sum/servingTimesList.size();
 }
 
 };
