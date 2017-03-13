@@ -1,0 +1,322 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <iomanip>
+using namespace std;
+
+enum FoodOrder { UNDECIDED = 0, HOTDOG, HAMBURGER };
+
+class Customer{
+	FoodOrder order;
+	int arrivalTime;
+	int timeWaiting;
+
+public:
+
+	Customer();
+	Customer(int foodOrderInt, int _arrivalTime);
+	int getWaitTime(int currentTime);
+	int checkOrder();
+	void printMe();
+};
+
+Customer::Customer(){
+		order = UNDECIDED;
+		arrivalTime = 0;
+		timeWaiting = 0;
+}
+
+Customer::Customer(int foodOrderInt, int _arrivalTime){
+	arrivalTime = _arrivalTime;								//set arrival time in constructor
+		if (foodOrderInt <= 60) {
+			order = HAMBURGER;
+		}
+		else{ order = HOTDOG; }
+		arrivalTime = _arrivalTime;
+}
+
+
+int Customer::getWaitTime(int serveTime){
+	timeWaiting = serveTime + arrivalTime;
+	return timeWaiting;
+}
+
+int Customer::checkOrder(){
+	if (order == HAMBURGER)
+		return HAMBURGER;
+	else if (order == HOTDOG)
+		return HOTDOG;
+	else
+		return UNDECIDED;
+}
+
+void Customer::printMe(){
+		cout << arrivalTime << endl;
+}
+
+
+
+class Server{
+	friend class Customer;
+	friend class Simulator;
+private:
+
+	vector<int> hotDogServingTimes;
+	vector<int> hamburgerServingTimes;
+	bool isBusy;									// NOTE: Should currentCust be a pointer to a customer instead of making a copy?
+	Customer currentCust;
+	
+public:
+
+	int currentCust_ServeTime;
+	int countHotDogs;
+	int TotalHotDogTime;
+	int countHamburgers;
+	int TotalHamburgerTime;
+	float cashierAVGCustomer;
+	float cashierAVGHotDog;
+	float cashierAVGHamburger;
+	float cashierAVGOrderTime;
+
+	Server();
+	void setServerTimes(int a1, int a2, int b1, int b2);
+	void serveCurrentCustomer(Customer x);
+	int getCurrentCust_ServeTime();
+	void PrintServerHourlyStats();
+};
+
+Server::Server(){
+
+	bool isBusy = false;									// NOTE: Should currentCust be a pointer to a customer instead of making a copy?
+	Customer currentCust;
+	currentCust_ServeTime = 0;
+	countHotDogs = 0;
+	TotalHotDogTime = 0;
+	countHamburgers = 0;
+	TotalHamburgerTime = 0;
+	cashierAVGCustomer = 0;
+	cashierAVGHotDog = 0;
+	cashierAVGHamburger = 0;
+	cashierAVGOrderTime = 0;
+}
+
+void Server::setServerTimes(int a1, int a2, int b1, int b2){
+	for (int i = a1; i <= a2; i++){
+		hotDogServingTimes.push_back(i);
+	}
+
+	for (int j = b1; j <= b2; j++){
+		hamburgerServingTimes.push_back(j);
+	}
+}
+
+void Server::serveCurrentCustomer(Customer x){     //function to update server states in relation to total service and current customer
+	
+	currentCust = x;
+	int randomServeTime = 0;
+	int thisHour = 60;
+
+	if (currentCust.checkOrder() == HOTDOG){
+		isBusy = true;
+		int randomServeTime = rand() % (hotDogServingTimes.back() - hotDogServingTimes.front()) + hotDogServingTimes[0];  //gets and random time within the array of times
+		currentCust_ServeTime = randomServeTime;
+		TotalHotDogTime += randomServeTime;
+		countHotDogs++;
+		cashierAVGHotDog = TotalHotDogTime / countHotDogs;
+	}
+
+	else if (currentCust.checkOrder() == HAMBURGER){
+		isBusy = true;
+		int randomServeTime = rand() % (hamburgerServingTimes.back() - hamburgerServingTimes.front()) + hamburgerServingTimes[0];
+		currentCust_ServeTime = randomServeTime;
+		TotalHamburgerTime += randomServeTime;
+		countHamburgers++;
+		cashierAVGHamburger = TotalHamburgerTime / countHamburgers;
+	}
+
+	else{
+		isBusy = false;
+
+	}
+
+	if (thisHour)
+		thisHour = 0;
+
+	cashierAVGOrderTime = (TotalHamburgerTime + TotalHotDogTime) / (countHotDogs + countHamburgers);
+	cashierAVGCustomer = (countHamburgers + countHotDogs);
+}
+
+int Server::getCurrentCust_ServeTime(){
+	return currentCust_ServeTime;
+}
+
+void Server::PrintServerHourlyStats(){
+	
+	cout << cashierAVGHotDog << "\t" << cashierAVGHamburger << "\t" << cashierAVGCustomer << "\t" << cashierAVGOrderTime;
+}
+
+class ServerList{
+private:
+	int numberOfServers = 0;
+	vector<Server> theServers;
+
+public:
+	void addServer(Server newServer);
+};
+
+void ServerList::addServer(Server newServer){
+	theServers.push_back(newServer);
+	numberOfServers++;
+}
+
+class Simulation{
+	friend class Server;
+	friend class Serverlist;
+	friend class Customer;
+
+	private:
+		//Needs two queues one per server
+		queue<Customer> aliceQueue;
+		queue<Customer> bobQueue;
+
+		// Hour is minutes divided by 60
+		int currentHour;
+		//currentMinute
+		int currentMinute;
+
+		// Wait time
+		float runningAVGWaitTime;
+		float AVGHotDog;
+		float AVGHamburger;
+		float AVGCust;
+
+		// Simulation Time
+		int simulationTimeLimit;
+
+		Server alice;
+		Server bob;
+
+	public:
+		Simulation();
+		void runSimulation();
+		void generateCustomers(int inputTime);
+		void printRestaurantHourStats(Server x, Server y);
+
+		// Line that the customers choose is random
+
+		//Customer generation
+};
+
+Simulation::Simulation(){
+	currentHour = 0;
+	//currentMinute
+	currentMinute = 1;
+
+	// Wait time
+	runningAVGWaitTime = 0;
+	AVGHotDog = 0;
+	AVGHamburger = 0;
+	AVGCust = 0;
+
+	// Simulation Time
+	simulationTimeLimit = 4320;
+}
+
+void Simulation::runSimulation(){
+
+	int aliceTimeToClear = 0;					//these are rates that must match to process a customer (per each server)
+	int TimeTo_releaseAliceCust = 0;
+	int bobTimeToClear = 0;
+	int TimeTo_releaseBobCust = 0;
+
+	alice.setServerTimes(1, 5, 8, 12);
+	bob.setServerTimes(4, 8, 6, 10);
+
+	cout << "HOUR\tAVG_HOTDOG\tAVG_HAMBURGER\tAVG_CUSTOMER\tAVG_WAIT" << endl;
+
+	for (currentMinute; currentMinute < simulationTimeLimit; currentMinute++) {			//this loop controls total time;
+		// Generate customers if neccesary
+		generateCustomers(currentMinute);
+
+		currentHour = currentMinute / 60;
+
+		if (!aliceQueue.empty()){
+			if (aliceTimeToClear == TimeTo_releaseAliceCust){					//the process time is updated depending on the generated customer and requires current
+				alice.serveCurrentCustomer(aliceQueue.front());					//minute to run until the process time is satisfied, then it resets and moves to next cust
+				aliceTimeToClear = alice.getCurrentCust_ServeTime();
+				aliceQueue.pop();
+				TimeTo_releaseAliceCust = 0;
+				TimeTo_releaseAliceCust++;
+			}
+			else{
+				TimeTo_releaseAliceCust++;
+			}
+		}	
+			
+		if (!bobQueue.empty()){									//same as alice above but for bob
+			if (bobTimeToClear == TimeTo_releaseBobCust){
+				bob.serveCurrentCustomer(bobQueue.front());
+				bobTimeToClear = bob.getCurrentCust_ServeTime();
+				bobQueue.pop();
+				TimeTo_releaseBobCust = 0;
+				TimeTo_releaseBobCust++;
+			}
+			else{
+				TimeTo_releaseBobCust++;
+			}
+		}
+
+		if (currentMinute % 60 == 0){
+			printRestaurantHourStats(alice, bob);
+			cout << endl;
+		}
+		
+
+		// End of for loop
+	}
+	
+	cout << "aliceQueue: \n";
+	while (aliceQueue.size()) {
+		aliceQueue.front().printMe();
+		aliceQueue.pop();
+	}
+	cout << "bobQueue: \n";
+	while (bobQueue.size()){
+		bobQueue.front().printMe();
+		bobQueue.pop();
+	}
+}
+
+void Simulation::printRestaurantHourStats(Server x, Server y){
+	AVGHamburger = (x.TotalHamburgerTime + y.TotalHamburgerTime) / (x.countHamburgers + y.countHamburgers);
+	AVGHotDog = (x.TotalHotDogTime + y.TotalHotDogTime) / (x.countHotDogs + y.countHotDogs);
+	AVGCust = (x.cashierAVGCustomer + y.cashierAVGCustomer);
+	runningAVGWaitTime = (x.TotalHamburgerTime + x.TotalHotDogTime + y.TotalHamburgerTime + y.TotalHotDogTime) / (AVGCust);
+
+	cout << currentHour << setw(15) << AVGHotDog << setw(15) << AVGHamburger << setw(15) << AVGCust << setw(15) << runningAVGWaitTime;
+}
+
+void Simulation::generateCustomers(int inputTime){
+	if (inputTime % 5 == 0) {
+		//Generate Customers every five minutes
+		Customer temp((rand() % 101) + 1, inputTime);
+		// Randomly into each line
+		if (rand() % 2 == 0) {
+			aliceQueue.push(temp);
+		}
+		else{
+			bobQueue.push(temp);
+		}
+	}
+}
+
+
+int main(){
+
+	Simulation mySim;
+	mySim.runSimulation();
+
+	system("pause");
+	return 0;
+}
