@@ -11,20 +11,31 @@ float globalAVGCustomers;
 float globalAVGWait;
 vector<double> timesToServeAHotdog;
 vector<double> timesToServeAHamburger;
-// NOTE: should be careful to increment only a single index across an hour for customersInAnHour
+// NOTE: variable keeps track of how many customers in the current hour and then resets
+int currentHourCustomerCounter;
 // NOTE: Total customers served is just adding up each vector member without dividing
 vector<double> customersInAnHour;
 vector<double> waitTimesForCustomer;
-void printStatsInColumns(string hour, string avgHotdog, string avgHamburger, string avgCustomers,string avgWait){
-        cout<<left<<setw(7)<<hour<<setw(14)<<avgHotdog<<setw(15)
+
+void printStatsInColumns(double hour, double avgHotdog, double avgHamburger, double avgCustomers,double avgWait){
+        cout<<left<<setw(7)<<hour<<setw(14)<<setprecision(2)<<fixed<<avgHotdog<<setw(15)
             <<avgHamburger<<setw(15)<<avgCustomers
             <<setw(12)<<avgWait<<endl;
 }
+void resetAndTallyUpCustomersPerHour(){
+  customersInAnHour.push_back(currentHourCustomerCounter);
+  currentHourCustomerCounter = 0;
+}
+
 public:
 void hourTracker(int time){
         currentHour = time/60;
 
         if (time%60==0) {
+                // NOTE: We need to do some housekeeping for the customers per hour here
+                // take the customers served per hour sum, add it to the vector and reset it
+                resetAndTallyUpCustomersPerHour();
+
                 if (currentHour==1) {
                         cout<<left<<setw(7)<<"Hour"<<setw(14)<<"AVG-Hotdog"<<setw(15)
                             <<"AVG-Hamburger"<<setw(15)<<"AVG-Customers"
@@ -37,17 +48,19 @@ void hourTracker(int time){
                 globalAVGWait = populateAverage(waitTimesForCustomer);
 
                 // Print them
-                printStatsInColumns(to_string(currentHour),to_string(globalAVGHotdog),to_string(globalAVGHamburger),to_string(globalAVGCustomers),to_string(globalAVGWait));
+                printStatsInColumns(currentHour,globalAVGHotdog,globalAVGHamburger,globalAVGCustomers,globalAVGWait);
         }
 }
 
 void setHotdogAndGeneralWait(int wait){
         timesToServeAHotdog.push_back(wait);
         waitTimesForCustomer.push_back(wait);
+        currentHourCustomerCounter++;
 }
 void setHamburgerAndGeneralWait(int wait){
         timesToServeAHamburger.push_back(wait);
         waitTimesForCustomer.push_back(wait);
+        currentHourCustomerCounter++;
 }
 float populateAverage(vector<double> input){
         if (input.size()==0) {
